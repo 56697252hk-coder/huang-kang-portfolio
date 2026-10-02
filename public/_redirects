@@ -1,1 +1,2 @@
-/portfolio /index.html 200
+# Serve /portfolio from the generated portfolio.html file.
+/portfolio/ /portfolio 301

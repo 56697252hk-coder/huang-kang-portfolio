@@ -71,7 +71,8 @@ function SiteHeader({ floating = false, activeSection = 'top' }) {
   </header>;
 }
 function App(){
-  const isHome = window.location.pathname !== '/portfolio';
+  const pagePath = window.location.pathname.replace(/\/+$/, '') || '/';
+  const isHome = pagePath !== '/portfolio';
   React.useLayoutEffect(() => {
     if (!isHome) document.getElementById(window.location.hash.slice(1) || 'projects')?.scrollIntoView({behavior: 'instant'});
   }, [isHome]);
