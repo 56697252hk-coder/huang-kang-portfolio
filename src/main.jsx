@@ -71,11 +71,38 @@ function SiteHeader({ floating = false, activeSection = 'top' }) {
   </header>;
 }
 function App(){
-  const pagePath = window.location.pathname.replace(/\/+$/, '') || '/';
-  const isHome = pagePath !== '/portfolio';
+  const readRoute = () => {
+    const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    const hash = window.location.hash;
+    const legacy = path === '/' && ['#projects','#about','#experience','#strengths','#contact'].includes(hash);
+    return {path: legacy ? '/portfolio' : path, hash};
+  };
+  const [route, setRoute] = React.useState(readRoute);
+  const isHome = route.path !== '/portfolio';
+  const [showIntro, setShowIntro] = React.useState(() => readRoute().path !== '/portfolio');
+  React.useEffect(() => {
+    const sync = () => { setShowIntro(false); setRoute(readRoute()); };
+    window.addEventListener('popstate', sync);
+    window.addEventListener('hashchange', sync);
+    return () => { window.removeEventListener('popstate', sync); window.removeEventListener('hashchange', sync); };
+  }, []);
   React.useLayoutEffect(() => {
-    if (!isHome) document.getElementById(window.location.hash.slice(1) || 'projects')?.scrollIntoView({behavior: 'instant'});
-  }, [isHome]);
+    if (window.location.pathname !== route.path) window.history.replaceState(null, '', route.path + route.hash);
+    if (isHome) window.scrollTo({top:0,behavior:'instant'});
+    else document.getElementById(route.hash.slice(1) || 'projects')?.scrollIntoView({behavior:'instant'});
+  }, [route, isHome]);
+  const navigate = event => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const anchor = event.target.closest('a[href]');
+    if (!anchor || anchor.target || anchor.hasAttribute('download')) return;
+    const url = new URL(anchor.href);
+    if (url.origin !== window.location.origin || !['/','/portfolio','/portfolio/'].includes(url.pathname)) return;
+    event.preventDefault();
+    window.history.pushState(null, '', url.pathname + url.hash);
+    setShowIntro(false);
+    setSelectedWork(null);
+    setRoute(readRoute());
+  };
   const [workFilter, setWorkFilter] = React.useState('全部');
   const [selectedWork, setSelectedWork] = React.useState(null);
   const [hasVideoStarted, setHasVideoStarted] = React.useState(false);
@@ -105,7 +132,7 @@ function App(){
     window.addEventListener('scroll', scheduleUpdate, { passive: true });
     window.addEventListener('resize', scheduleUpdate);
     return () => { if (frame !== null) cancelAnimationFrame(frame); window.removeEventListener('scroll', scheduleUpdate); window.removeEventListener('resize', scheduleUpdate); };
-  }, []);
+  }, [isHome]);
   React.useEffect(() => {
     const closeOnEscape = (event) => { if (event.key === 'Escape') setSelectedWork(null); };
     setHasVideoStarted(false);
@@ -128,10 +155,10 @@ function App(){
     }), { threshold: .16, rootMargin: '0px 0px -7% 0px' });
     revealItems.forEach(item => itemObserver.observe(item));
     return () => { observer.disconnect(); itemObserver.disconnect(); document.body.classList.remove('motion-ready'); };
-  }, [workFilter]);
-  return <main className={isHome ? 'home-page' : 'portfolio-page'}>
+  }, [workFilter, isHome]);
+  return <main onClick={navigate} className={(isHome ? 'home-page' : 'portfolio-page') + (showIntro ? ' initial-intro' : '')}>
     <CustomCursor/>
-    <div className="opening-screen" aria-hidden="true"><span className="opening-line opening-line-a"/><div className="opening-word"><span>HUANG KANG</span><small>CREATIVE PORTFOLIO · 2026</small></div><span className="opening-line opening-line-b"/></div>
+    {showIntro && <div className="opening-screen" aria-hidden="true"><span className="opening-line opening-line-a"/><div className="opening-word"><span>HUANG KANG</span><small>CREATIVE PORTFOLIO · 2026</small></div><span className="opening-line opening-line-b"/></div>}
     {isHome && <section className="hero" id="top">
       <div className="hero-media" aria-hidden="true"><HeroBackgroundVideo/><div className="hero-art"><span className="halo halo-a"/><span className="halo halo-b"/><span className="grid-plane"/></div></div>
       <div className="hero-shade"/>

@@ -305,3 +305,9 @@ body{overflow-x:hidden}
  .home-page .hero-rail a{display:block;padding:10px 0}
  .home-page .orbit-featured{bottom:54px}
 }
+/* Internal navigation does not replay the initial landing animation. */
+body.motion-ready .home-page:not(.initial-intro) .hero .site-header,
+body.motion-ready .home-page:not(.initial-intro) .hero .orbit-stage,
+body.motion-ready .home-page:not(.initial-intro) .hero .orbit-path,
+body.motion-ready .home-page:not(.initial-intro) .hero .orbit-center,
+body.motion-ready .home-page:not(.initial-intro) .hero-rail{animation:none}
