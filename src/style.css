@@ -291,3 +291,17 @@ body{overflow-x:hidden}
   .about-content h2{font-size:clamp(30px,8vw,48px);line-height:1.25}
   .about-content h2 span{white-space:nowrap}
 }
+
+/* The landing page is one screen; detail sections live at /portfolio. */
+.home-page{height:100svh;overflow:hidden}
+.home-page .hero{height:100%;min-height:0;max-height:none}
+.home-page .hero-rail a{pointer-events:auto;color:var(--accent);font-weight:600}
+.portfolio-page .section,.portfolio-page #contact{scroll-margin-top:90px}
+@media(max-width:700px){
+ .home-page .site-header nav{display:flex;gap:12px;margin-left:auto;margin-right:0;font-size:11px}
+ .home-page .site-header .header-contact{display:none}
+ .home-page .site-header .brand small{display:none}
+ .home-page .hero-rail{bottom:12px;align-items:center;font-size:8px}
+ .home-page .hero-rail a{display:block;padding:10px 0}
+ .home-page .orbit-featured{bottom:54px}
+}
