@@ -1,0 +1,9 @@
+node_modules/
+dist/
+incoming-videos/
+*.log
+.env
+.env.*
+!.env.example
+recording-014844-sheet.jpg
+media-videos/
