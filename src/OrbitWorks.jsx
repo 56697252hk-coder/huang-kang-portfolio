@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './OrbitWorks.css';
 import VideoPreview from './VideoPreview.jsx';
 
-export default function OrbitWorks({projects,onSelect,suspended=false}){
+export default function OrbitWorks({projects,onSelect,onWarm,suspended=false}){
   const total=projects.length;
   const stageRef=useRef(null);
   const dragRef=useRef(null);
@@ -82,11 +82,11 @@ export default function OrbitWorks({projects,onSelect,suspended=false}){
   return <div ref={stageRef} className={`orbit-works${isVisible&&!suspended?'':' is-paused'}`} aria-label="首页精选作品环绕展示，可用鼠标滚轮或拖动浏览" onWheel={wheel} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} onDragStart={event=>event.preventDefault()}>
     <div className="orbit-path" aria-hidden="true"/>
     <div className="orbit-stage">
-      {projects.map((project,index)=><button type="button" className="orbit-work" data-index={index} key={project.n} style={{'--orbit-index':index,'--orbit-total':total}} onClick={event=>{if(event.detail===0&&project.video)onSelect?.(project);}} aria-label={`${project.title}，查看项目`}>
+      {projects.map((project,index)=><button type="button" className="orbit-work" data-index={index} key={project.n} style={{'--orbit-index':index,'--orbit-total':total}} onPointerEnter={()=>onWarm?.(project.video)} onFocus={()=>onWarm?.(project.video)} onTouchStart={()=>onWarm?.(project.video)} onClick={event=>{if(event.detail===0&&project.video)onSelect?.(project);}} aria-label={`${project.title}，查看项目`}>
         <span className="orbit-work-media">{project.video?<VideoPreview poster={project.poster} src={project.video} previewAt={project.previewAt} previewSecond={project.previewSecond}/>:<span className="orbit-placeholder"/>}</span>
       </button>)}
     </div>
-    {projects[activeIndex]&&<button key={activeIndex} type="button" className="orbit-featured" onPointerDown={event=>event.stopPropagation()} onClick={()=>projects[activeIndex].video&&onSelect?.(projects[activeIndex])} aria-label={`查看${projects[activeIndex].title}`}>
+    {projects[activeIndex]&&<button key={activeIndex} type="button" className="orbit-featured" onPointerEnter={()=>onWarm?.(projects[activeIndex].video)} onFocus={()=>onWarm?.(projects[activeIndex].video)} onTouchStart={()=>onWarm?.(projects[activeIndex].video)} onPointerDown={event=>event.stopPropagation()} onClick={()=>projects[activeIndex].video&&onSelect?.(projects[activeIndex])} aria-label={`查看${projects[activeIndex].title}`}>
       <span className="orbit-featured-thumb"><VideoPreview key={projects[activeIndex].video} poster={projects[activeIndex].poster} src={projects[activeIndex].video} previewAt={projects[activeIndex].previewAt} previewSecond={projects[activeIndex].previewSecond}/></span>
       <strong>{projects[activeIndex].title}</strong><span aria-hidden="true">↗</span>
     </button>}
