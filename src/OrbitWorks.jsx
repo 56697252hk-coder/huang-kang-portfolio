@@ -49,6 +49,7 @@ export default function OrbitWorks({projects,onSelect,onWarm,suspended=false}){
     frame=requestAnimationFrame(updateActive);
     return()=>cancelAnimationFrame(frame);
   },[total,isVisible,suspended]);
+  useEffect(()=>{if(!suspended)onWarm?.(projects[activeIndex]?.video);},[activeIndex,onWarm,projects,suspended]);
   const getOrbitAnimations=()=>[...stageRef.current.querySelectorAll('.orbit-work')].flatMap(item=>item.getAnimations().filter(animation=>animation.animationName==='orbit-travel'||animation.animationName==='orbit-depth'));
   const setLoopTime=(animation,value)=>{const duration=Number(animation.effect.getComputedTiming().duration)||42000;animation.currentTime=duration*2+((value%duration)+duration)%duration;};
   const updateDrag=()=>{const drag=dragRef.current;if(!drag)return;drag.smoothDx+=(drag.targetDx-drag.smoothDx)*.13;drag.animations.forEach((animation,index)=>setLoopTime(animation,drag.times[index]+drag.smoothDx*28));if(Math.abs(drag.targetDx-drag.smoothDx)>.08){drag.frame=requestAnimationFrame(updateDrag);}else{drag.smoothDx=drag.targetDx;drag.animations.forEach((animation,index)=>setLoopTime(animation,drag.times[index]+drag.targetDx*28));drag.frame=null;if(drag.released){drag.animations.forEach((animation,index)=>{animation.playbackRate=drag.nextRate??drag.rates[index];animation.play();});dragRef.current=null;}}};

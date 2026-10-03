@@ -11,6 +11,7 @@ import { warmVideo } from './videoWarmup.js';
 import './style.css';
 
 const GradientWaves = React.lazy(() => import('./GradientWaves.jsx'));
+const warmVideoAuto = src => warmVideo(src, 'auto');
 
 const email = '56697252@qq.com';
 // 求职意向：暂不在首页展示，需要时可恢复为独立内容模块。
@@ -139,19 +140,22 @@ function App(){
   };
   React.useEffect(() => { setShowFloatingHeader(!isHome); }, [isHome]);
   React.useEffect(() => {
-    if (!['/','/portfolio'].includes(route.path)) return undefined;
+    if (route.path !== '/portfolio') return undefined;
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType || '')) return undefined;
     const timers = [];
-    const preload = () => workItems.forEach((item, index) => {
-      timers.push(window.setTimeout(() => warmVideo(item.video), index * 160));
-    });
-    const idleId = 'requestIdleCallback' in window ? window.requestIdleCallback(preload, { timeout: 1800 }) : window.setTimeout(preload, 900);
-    return () => {
-      timers.forEach(window.clearTimeout);
-      if ('cancelIdleCallback' in window) window.cancelIdleCallback(idleId); else window.clearTimeout(idleId);
-    };
-  }, [route.path]);
+    const observer = new IntersectionObserver(entries => {
+      let delay = 0;
+      entries.filter(entry => entry.isIntersecting).forEach((entry, index) => {
+        const src = entry.target.dataset.video;
+        if (src) timers.push(window.setTimeout(() => warmVideo(src, index < 2 ? 'auto' : 'metadata'), delay));
+        delay += 260;
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: '220px 0px' });
+    document.querySelectorAll('.work-tile[data-video]').forEach(tile => observer.observe(tile));
+    return () => { observer.disconnect(); timers.forEach(window.clearTimeout); };
+  }, [route.path, workFilter]);
   React.useEffect(() => {
     const closeOnEscape = (event) => { if (event.key === 'Escape') setSelectedWork(null); };
     setHasVideoStarted(false);
@@ -182,14 +186,14 @@ function App(){
       <div className="hero-media" aria-hidden="true">{!showIntro && <HeroBackgroundVideo/>}<div className="hero-art"><span className="halo halo-a"/><span className="halo halo-b"/><span className="grid-plane"/></div></div>
       <div className="hero-shade"/>
       <SiteHeader activeSection={activeSection}/>
-      <OrbitWorks suspended={showIntro} projects={heroProjects} onSelect={setSelectedWork} onWarm={warmVideo}/>
+      <OrbitWorks suspended={showIntro} projects={heroProjects} onSelect={setSelectedWork} onWarm={warmVideoAuto}/>
       <div className="hero-rail shell"><span>HUANG KANG / SELECTED WORKS</span><a href="/portfolio">浏览全部作品 ↗</a></div>
     </section>}
     {!isHome && <>
     {hasPageWaves && <React.Suspense fallback={null}><GradientWaves className="page-gradient-waves" horizonColor="#0a241f" waveColor="#5f9d78" crestColor="#e3ffa4" speed={.22} amplitude={2.15} waveScale={.55} waveRatio={.9} swell={28} turbulence={16} tilt={1.14} zoom={1.08} height={5.2} fogDepth={17} detail="low" brightness={.92} opacity={.96} mouseInteraction parallaxStrength={.32} grain grainIntensity={.035}/></React.Suspense>}
     {showFloatingHeader && <SiteHeader floating activeSection={activeSection}/>} 
     {route.path === '/portfolio' &&
-    <section className="projects section reveal-section" id="projects"><div className="shell"><div className="works-eyebrow">01 / THE WORK / 作品</div><div className="works-heading"><h2>Selected works<span>.</span></h2><p>创意、影像与动态视觉的不同表达。</p></div><div className="works-toolbar"><div className="works-filters" aria-label="作品分类">{workFilters.map(filter => <button type="button" key={filter} className={workFilter === filter ? 'is-active' : ''} onClick={() => setWorkFilter(filter)} aria-pressed={workFilter === filter}>{filter}</button>)}</div><span className="works-count">{String(visibleWorks.length).padStart(2,'0')} / {String(workItems.length).padStart(2,'0')}</span></div><div className="works-grid">{visibleWorks.map(item => <article className={`work-tile ${item.video ? 'has-video' : ''}`} id={`work-${item.n}`} key={item.n} role={item.video ? 'button' : undefined} tabIndex={item.video ? 0 : undefined} onPointerEnter={() => warmVideo(item.video)} onFocus={() => warmVideo(item.video)} onTouchStart={() => warmVideo(item.video)} onClick={() => item.video && setSelectedWork(item)} onKeyDown={(event) => { if (item.video && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); setSelectedWork(item); } }}><GlareHover className="work-glare" width="100%" height="auto" background="#142322" borderRadius="0px" borderColor="#2b3432" glareColor="#94a3b8" glareOpacity={.6} glareAngle={-30} glareSize={300} transitionDuration={500} playOnce><div className={`work-cover ${item.video || item.image ? '' : 'work-cover-empty'}`} role="img" aria-label={item.video ? `${item.title}的视频预览` : item.image ? `${item.title}的封面` : `${item.title}，封面待加入`}>{item.video ? <><VideoPreview poster={item.poster} src={item.video} previewAt={item.previewAt} previewSecond={item.previewSecond}/><span className="work-play" aria-hidden="true">▶</span></> : item.image ? <img src={item.image} alt="" /> : <><span className="work-cover-index">HK / SELECTED WORK</span><span className="work-cover-number" aria-hidden="true">{item.n}</span><span className="work-cover-category">{item.category}</span></>}</div></GlareHover><div className="work-tile-meta"><h3>{item.title}</h3><span aria-hidden="true">↗</span></div><p>{item.category} / {item.detail}</p></article>)}</div></div></section>
+    <section className="projects section reveal-section" id="projects"><div className="shell"><div className="works-eyebrow">01 / THE WORK / 作品</div><div className="works-heading"><h2>Selected works<span>.</span></h2><p>创意、影像与动态视觉的不同表达。</p></div><div className="works-toolbar"><div className="works-filters" aria-label="作品分类">{workFilters.map(filter => <button type="button" key={filter} className={workFilter === filter ? 'is-active' : ''} onClick={() => setWorkFilter(filter)} aria-pressed={workFilter === filter}>{filter}</button>)}</div><span className="works-count">{String(visibleWorks.length).padStart(2,'0')} / {String(workItems.length).padStart(2,'0')}</span></div><div className="works-grid">{visibleWorks.map(item => <article className={`work-tile ${item.video ? 'has-video' : ''}`} id={`work-${item.n}`} key={item.n} data-video={item.video || undefined} role={item.video ? 'button' : undefined} tabIndex={item.video ? 0 : undefined} onPointerEnter={() => warmVideoAuto(item.video)} onFocus={() => warmVideoAuto(item.video)} onTouchStart={() => warmVideoAuto(item.video)} onClick={() => item.video && setSelectedWork(item)} onKeyDown={(event) => { if (item.video && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); setSelectedWork(item); } }}><GlareHover className="work-glare" width="100%" height="auto" background="#142322" borderRadius="0px" borderColor="#2b3432" glareColor="#94a3b8" glareOpacity={.6} glareAngle={-30} glareSize={300} transitionDuration={500} playOnce><div className={`work-cover ${item.video || item.image ? '' : 'work-cover-empty'}`} role="img" aria-label={item.video ? `${item.title}的视频预览` : item.image ? `${item.title}的封面` : `${item.title}，封面待加入`}>{item.video ? <><VideoPreview poster={item.poster} src={item.video} previewAt={item.previewAt} previewSecond={item.previewSecond}/><span className="work-play" aria-hidden="true">▶</span></> : item.image ? <img src={item.image} alt="" /> : <><span className="work-cover-index">HK / SELECTED WORK</span><span className="work-cover-number" aria-hidden="true">{item.n}</span><span className="work-cover-category">{item.category}</span></>}</div></GlareHover><div className="work-tile-meta"><h3>{item.title}</h3><span aria-hidden="true">↗</span></div><p>{item.category} / {item.detail}</p></article>)}</div></div></section>
     }
     {route.path === '/about' &&
     <section className="about section shell reveal-section" id="about"><div className="section-kicker"><span>02 / ABOUT</span><span>关于我</span></div><div className="about-grid"><ProfileCard className="portrait" avatarUrl="/designer-avatar.webp" name="黄康" title="VIDEO · MOTION · AIGC"/><BorderGlow className="about-glow-card"><div className="about-content"><div className="overline">VIDEO · MOTION · AIGC</div><h2>你好，我是<span>黄康。</span></h2><p className="about-lead">一名持续探索影像叙事与动态视觉的创作者。</p><p className="about-copy">赣南师范大学戏剧与影视硕士在读。曾在快手负责视觉创意动态设计，在网易云音乐参与全平台视频内容策划与制作。我关注创意如何被清晰表达，也关注新工具如何打开更自由的视觉可能。</p><div className="about-service"><small>服务方向</small><strong>视频制作 / 创意动效 / AIGC</strong></div><div className="about-stats"><div><strong>35<span>%</span></strong><small>AI 工作流效率提升</small></div><div><strong>1000<span>+</span></strong><small>快影新增会员 / 周</small></div><div><strong>25<span>+</span></strong><small>设计与创意奖项</small></div></div><div className="about-links"><a href={'mailto:'+email}>{email} <Arrow diagonal/></a><a href="tel:13907075842">139 0707 5842 <Arrow diagonal/></a></div></div></BorderGlow></div><div className="experience" id="experience"><div className="experience-heading"><span>CAREER PATH / 个人经历</span><h3>工作经历<span className="experience-spark">✳</span></h3></div><div className="experience-grid">{experience.map((item, index) => <article className="experience-item" key={item.date}><span className="experience-node" aria-hidden="true">✦</span><div className="experience-index">0{index + 1} / 0{experience.length}</div><time>{item.date}</time><h4>{item.company}</h4><div className="experience-tags"><span>{item.role}</span><span>{item.location}</span></div><p>{item.description}</p></article>)}</div></div></section>
