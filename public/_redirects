@@ -1,2 +1,5 @@
-# Serve /portfolio from the generated portfolio.html file.
+# Normalize trailing slashes for generated page entries.
 /portfolio/ /portfolio 301
+/about/ /about 301
+/strengths/ /strengths 301
+/contact/ /contact 301

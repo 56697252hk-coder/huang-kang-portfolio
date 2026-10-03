@@ -66,20 +66,39 @@ function Arrow({diagonal=false}) { return <span aria-hidden="true" className="ar
 function SiteHeader({ floating = false, activeSection = 'top' }) {
   return <header className={floating ? 'site-header floating-header' : 'site-header shell'}>
     <a className="brand" href="/" aria-label="黄康，返回首页">HK<span className="brand-dot">.</span><small>HUANG KANG</small></a>
-    <nav aria-label={floating ? '悬浮导航' : '主导航'}><a className={activeSection === 'projects' ? 'is-active' : ''} href="/portfolio#projects">精选作品</a><a className={activeSection === 'about' ? 'is-active' : ''} href="/portfolio#about">关于我</a><a className={activeSection === 'strengths' ? 'is-active' : ''} href="/portfolio#strengths">个人优势</a></nav>
-    <a className={`header-contact${activeSection === 'contact' ? ' is-active' : ''}`} href="/portfolio#contact">联系我 <Arrow diagonal/></a>
+    <nav aria-label={floating ? '悬浮导航' : '主导航'}><a className={activeSection === 'projects' ? 'is-active' : ''} href="/portfolio">精选作品</a><a className={activeSection === 'about' ? 'is-active' : ''} href="/about">关于我</a><a className={activeSection === 'strengths' ? 'is-active' : ''} href="/strengths">个人优势</a></nav>
+    <a className={`header-contact${activeSection === 'contact' ? ' is-active' : ''}`} href="/contact">联系我 <Arrow diagonal/></a>
   </header>;
+}
+function PageContactStrip(){
+  return <section className="page-contact" aria-label="联系合作">
+    <div className="shell page-contact-inner">
+      <div className="page-contact-top"><span>CONTACT / 联系</span><span>AVAILABLE · CN</span></div>
+      <div className="page-contact-hero">
+        <h2>Let’s <em>create.</em></h2>
+        <div><h3>让想法，成为作品。</h3><p>从创意与视觉设计，到影像、动效与 AIGC。<br/>带着一个想法、一个项目，或一段待完成的故事，来聊聊。</p></div>
+      </div>
+      <div className="page-contact-links">
+        <a href={'mailto:'+email}><small>Email / 邮件</small><strong>{email}</strong><span>↗</span></a>
+        <div><small>WeChat / 微信</small><strong>139 0707 5842</strong><span>复制</span></div>
+        <a href="/contact"><small>Contact / 合作</small><strong>发起合作</strong><span>↗</span></a>
+      </div>
+    </div>
+  </section>;
 }
 function App(){
   const readRoute = () => {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
     const hash = window.location.hash;
-    const legacy = path === '/' && ['#projects','#about','#experience','#strengths','#contact'].includes(hash);
-    return {path: legacy ? '/portfolio' : path, hash};
+    const legacyRoutes = { '#projects':'/portfolio', '#about':'/about', '#experience':'/about', '#strengths':'/strengths', '#contact':'/contact' };
+    if (path === '/' && legacyRoutes[hash]) return {path:legacyRoutes[hash], hash:''};
+    if (path === '/portfolio' && legacyRoutes[hash]) return {path:legacyRoutes[hash], hash:''};
+    return {path, hash};
   };
   const [route, setRoute] = React.useState(readRoute);
-  const isHome = route.path !== '/portfolio';
-  const [showIntro, setShowIntro] = React.useState(() => readRoute().path !== '/portfolio' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const isHome = route.path === '/';
+  const activeSection = route.path === '/portfolio' ? 'projects' : route.path.slice(1) || 'top';
+  const [showIntro, setShowIntro] = React.useState(() => readRoute().path === '/' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   React.useEffect(() => {
     const sync = () => { setShowIntro(false); setRoute(readRoute()); };
     window.addEventListener('popstate', sync);
@@ -87,16 +106,15 @@ function App(){
     return () => { window.removeEventListener('popstate', sync); window.removeEventListener('hashchange', sync); };
   }, []);
   React.useLayoutEffect(() => {
-    if (window.location.pathname !== route.path) window.history.replaceState(null, '', route.path + route.hash);
-    if (isHome) window.scrollTo({top:0,behavior:'instant'});
-    else document.getElementById(route.hash.slice(1) || 'projects')?.scrollIntoView({behavior:'instant'});
-  }, [route, isHome]);
+    if (window.location.pathname.replace(/\/+$/, '') !== route.path || window.location.hash !== route.hash) window.history.replaceState(null, '', route.path + route.hash);
+    window.scrollTo({top:0,behavior:'instant'});
+  }, [route]);
   const navigate = event => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const anchor = event.target.closest('a[href]');
     if (!anchor || anchor.target || anchor.hasAttribute('download')) return;
     const url = new URL(anchor.href);
-    if (url.origin !== window.location.origin || !['/','/portfolio','/portfolio/'].includes(url.pathname)) return;
+    if (url.origin !== window.location.origin || !['/','/portfolio','/portfolio/','/about','/about/','/strengths','/strengths/','/contact','/contact/'].includes(url.pathname)) return;
     event.preventDefault();
     window.history.pushState(null, '', url.pathname + url.hash);
     setShowIntro(false);
@@ -108,7 +126,6 @@ function App(){
   const [hasVideoStarted, setHasVideoStarted] = React.useState(false);
   const modalVideoRef = React.useRef(null);
   const [showFloatingHeader, setShowFloatingHeader] = React.useState(false);
-  const [activeSection, setActiveSection] = React.useState('top');
   const visibleWorks = workFilter === '全部' ? workItems : workItems.filter(item => item.category === workFilter);
   const playableWorks = workItems.filter(item => item.video);
   const selectedWorkIndex = selectedWork ? playableWorks.findIndex(item => item.n === selectedWork.n) : -1;
@@ -116,23 +133,7 @@ function App(){
     const nextIndex = selectedWorkIndex + offset;
     if (nextIndex >= 0 && nextIndex < playableWorks.length) setSelectedWork(playableWorks[nextIndex]);
   };
-  React.useEffect(() => {
-    let frame = null;
-    const update = () => {
-      frame = null;
-      const hero = document.getElementById('top');
-      setShowFloatingHeader(!isHome || Boolean(hero && hero.getBoundingClientRect().bottom <= 105));
-      const marker = window.scrollY + window.innerHeight * .38;
-      let current = 'top';
-      ['projects','about','strengths','contact'].forEach(id => { const section = document.getElementById(id); if (section && section.offsetTop <= marker) current = id; });
-      setActiveSection(current);
-    };
-    const scheduleUpdate = () => { if (frame === null) frame = requestAnimationFrame(update); };
-    update();
-    window.addEventListener('scroll', scheduleUpdate, { passive: true });
-    window.addEventListener('resize', scheduleUpdate);
-    return () => { if (frame !== null) cancelAnimationFrame(frame); window.removeEventListener('scroll', scheduleUpdate); window.removeEventListener('resize', scheduleUpdate); };
-  }, [isHome]);
+  React.useEffect(() => { setShowFloatingHeader(!isHome); }, [isHome]);
   React.useEffect(() => {
     const closeOnEscape = (event) => { if (event.key === 'Escape') setSelectedWork(null); };
     setHasVideoStarted(false);
@@ -155,7 +156,7 @@ function App(){
     }), { threshold: .16, rootMargin: '0px 0px -7% 0px' });
     revealItems.forEach(item => itemObserver.observe(item));
     return () => { observer.disconnect(); itemObserver.disconnect(); document.body.classList.remove('motion-ready'); };
-  }, [workFilter, isHome]);
+  }, [workFilter, route.path]);
   return <main onClick={navigate} className={(isHome ? 'home-page' : 'portfolio-page') + (showIntro ? ' initial-intro' : '')}>
     <CustomCursor/>
     {showIntro && <div className="opening-screen" aria-hidden="true" onAnimationEnd={event => { if (event.target === event.currentTarget) setShowIntro(false); }}><span className="opening-line opening-line-a"/><div className="opening-word"><span>HUANG KANG</span><small>CREATIVE PORTFOLIO · 2026</small></div><span className="opening-line opening-line-b"/></div>}
@@ -164,14 +165,23 @@ function App(){
       <div className="hero-shade"/>
       <SiteHeader activeSection={activeSection}/>
       <OrbitWorks suspended={showIntro} projects={heroProjects} onSelect={setSelectedWork}/>
-      <div className="hero-rail shell"><span>HUANG KANG / SELECTED WORKS</span><a href="/portfolio#projects">浏览全部作品 ↗</a></div>
+      <div className="hero-rail shell"><span>HUANG KANG / SELECTED WORKS</span><a href="/portfolio">浏览全部作品 ↗</a></div>
     </section>}
     {!isHome && <>
     {showFloatingHeader && <SiteHeader floating activeSection={activeSection}/>} 
+    {route.path === '/portfolio' &&
     <section className="projects section reveal-section" id="projects"><div className="shell"><div className="works-eyebrow">01 / THE WORK / 作品</div><div className="works-heading"><h2>Selected works<span>.</span></h2><p>创意、影像与动态视觉的不同表达。</p></div><div className="works-toolbar"><div className="works-filters" aria-label="作品分类">{workFilters.map(filter => <button type="button" key={filter} className={workFilter === filter ? 'is-active' : ''} onClick={() => setWorkFilter(filter)} aria-pressed={workFilter === filter}>{filter}</button>)}</div><span className="works-count">{String(visibleWorks.length).padStart(2,'0')} / {String(workItems.length).padStart(2,'0')}</span></div><div className="works-grid">{visibleWorks.map(item => <article className={`work-tile ${item.video ? 'has-video' : ''}`} id={`work-${item.n}`} key={item.n} role={item.video ? 'button' : undefined} tabIndex={item.video ? 0 : undefined} onClick={() => item.video && setSelectedWork(item)} onKeyDown={(event) => { if (item.video && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); setSelectedWork(item); } }}><GlareHover className="work-glare" width="100%" height="auto" background="#142322" borderRadius="0px" borderColor="#2b3432" glareColor="#94a3b8" glareOpacity={.6} glareAngle={-30} glareSize={300} transitionDuration={500} playOnce><div className={`work-cover ${item.video || item.image ? '' : 'work-cover-empty'}`} role="img" aria-label={item.video ? `${item.title}的视频预览` : item.image ? `${item.title}的封面` : `${item.title}，封面待加入`}>{item.video ? <><VideoPreview poster={item.poster} src={item.video} previewAt={item.previewAt} previewSecond={item.previewSecond}/><span className="work-play" aria-hidden="true">▶</span></> : item.image ? <img src={item.image} alt="" /> : <><span className="work-cover-index">HK / SELECTED WORK</span><span className="work-cover-number" aria-hidden="true">{item.n}</span><span className="work-cover-category">{item.category}</span></>}</div></GlareHover><div className="work-tile-meta"><h3>{item.title}</h3><span aria-hidden="true">↗</span></div><p>{item.category} / {item.detail}</p></article>)}</div></div></section>
+    }
+    {route.path === '/about' &&
     <section className="about section shell reveal-section" id="about"><div className="section-kicker"><span>02 / ABOUT</span><span>关于我</span></div><div className="about-grid"><ProfileCard className="portrait" avatarUrl="/designer-avatar.webp" name="黄康" title="VIDEO · MOTION · AIGC"/><BorderGlow className="about-glow-card"><div className="about-content"><div className="overline">VIDEO · MOTION · AIGC</div><h2>你好，我是<span>黄康。</span></h2><p className="about-lead">一名持续探索影像叙事与动态视觉的创作者。</p><p className="about-copy">赣南师范大学戏剧与影视硕士在读。曾在快手负责视觉创意动态设计，在网易云音乐参与全平台视频内容策划与制作。我关注创意如何被清晰表达，也关注新工具如何打开更自由的视觉可能。</p><div className="about-service"><small>服务方向</small><strong>视频制作 / 创意动效 / AIGC</strong></div><div className="about-stats"><div><strong>35<span>%</span></strong><small>AI 工作流效率提升</small></div><div><strong>1000<span>+</span></strong><small>快影新增会员 / 周</small></div><div><strong>25<span>+</span></strong><small>设计与创意奖项</small></div></div><div className="about-links"><a href={'mailto:'+email}>{email} <Arrow diagonal/></a><a href="tel:13907075842">139 0707 5842 <Arrow diagonal/></a></div></div></BorderGlow></div><div className="experience" id="experience"><div className="experience-heading"><span>CAREER PATH / 个人经历</span><h3>工作经历<span className="experience-spark">✳</span></h3></div><div className="experience-grid">{experience.map((item, index) => <article className="experience-item" key={item.date}><span className="experience-node" aria-hidden="true">✦</span><div className="experience-index">0{index + 1} / 0{experience.length}</div><time>{item.date}</time><h4>{item.company}</h4><div className="experience-tags"><span>{item.role}</span><span>{item.location}</span></div><p>{item.description}</p></article>)}</div></div></section>
+    }
+    {route.path === '/strengths' &&
     <section className="strengths section shell reveal-section" id="strengths"><div className="section-kicker"><span>03 / CAPABILITIES</span><span>个人优势</span></div><div className="strength-head"><h2>从一个想法，<br/>到一支<span>完整的作品。</span></h2><p>以内容为起点，以视觉为语言。<br/>让技术服务于表达。</p></div><div className="ability-grid">{abilities.map(a=><div className="ability" key={a.n}><span className="ability-no">{a.n} / 04</span><div className="ability-symbol" aria-hidden="true">{a.n==='01'?'✳':a.n==='02'?'◎':a.n==='03'?'✦':'↗'}</div><div><small>{a.en}</small><h3>{a.title}</h3><p>{a.text}</p></div></div>)}</div></section>
+    }
+    {['/portfolio','/about','/strengths'].includes(route.path) && <PageContactStrip/>}
+    {route.path === '/contact' &&
     <footer className="contact reveal-section" id="contact"><div className="contact-glow"/><div className="shell contact-inner"><div className="section-kicker"><span>04 / CONTACT</span><span>保持联系</span></div><div className="contact-main"><div className="contact-statement"><p>联系方式</p><h2>LET’S CREATE<br/>SOMETHING<br/><em>MEMORABLE.</em> <span>↘</span></h2><a className="contact-button" href={'mailto:'+email}>HK. HUANG KANG</a></div><aside className="contact-card"><span className="contact-card-label">CONTACT</span><a href="tel:13907075842"><small>PHONE</small><strong>+86 139 0707 5842</strong></a><div className="contact-direction"><small>WECHAT</small><strong>139 0707 5842</strong></div><a href={'mailto:'+email}><small>EMAIL</small><strong>{email}</strong></a><div className="contact-direction"><small>FOCUS</small><strong>VIDEO · MOTION · AIGC</strong></div><a className="contact-card-cta" href={'mailto:'+email}>发起合作 <Arrow diagonal/></a></aside></div><div className="contact-bottom"><span>© 2026 HUANG KANG</span><span>VIDEO CREATIVE / MOTION / AIGC</span><a href="/">返回首页 ↗</a></div></div></footer>
+    }
     </> }
     {selectedWork && <div className="video-modal" role="dialog" aria-modal="true" aria-label={`${selectedWork.title}视频播放`} onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedWork(null); }}><div className="video-modal-panel"><button className="video-modal-close" type="button" onClick={() => setSelectedWork(null)} aria-label="关闭视频">×</button><div className="video-modal-media"><video ref={modalVideoRef} key={selectedWork.video} src={selectedWork.video} poster={selectedWork.poster} controls={hasVideoStarted} playsInline onPlay={() => setHasVideoStarted(true)}/>{!hasVideoStarted && <button className="video-modal-play" type="button" onClick={() => modalVideoRef.current?.play()}><span aria-hidden="true">▶</span>观看作品</button>}</div><div className="video-modal-info"><div className="video-modal-copy"><span>{selectedWork.category} · {selectedWork.detail}</span><h2>{selectedWork.title}</h2></div><div className="video-modal-actions"><span>{String(selectedWorkIndex + 1).padStart(2,'0')} / {String(playableWorks.length).padStart(2,'0')}</span><button type="button" onClick={() => selectRelativeWork(-1)} disabled={selectedWorkIndex <= 0} aria-label="上一个视频">←</button><button type="button" onClick={() => selectRelativeWork(1)} disabled={selectedWorkIndex >= playableWorks.length - 1} aria-label="下一个视频">→</button></div></div></div></div>}
   </main>

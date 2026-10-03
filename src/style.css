@@ -323,3 +323,31 @@ body.motion-ready .initial-intro .hero .orbit-path,
 body.motion-ready .initial-intro .hero .orbit-center,
 body.motion-ready .initial-intro .hero-rail{animation:none}
 .initial-intro .halo{animation-play-state:paused}
+
+/* Compact contact ending shared by the three portfolio content pages. */
+.page-contact{position:relative;overflow:hidden;background:#060706;color:#f1f0eb;border-top:1px solid #252825}
+.page-contact:before{content:'';position:absolute;inset:auto -8% -70% 45%;height:520px;background:radial-gradient(circle,rgba(187,226,101,.08),transparent 68%);pointer-events:none}
+.page-contact-inner{position:relative;padding-top:34px;padding-bottom:44px}
+.page-contact-top{display:flex;justify-content:space-between;color:#b8c0b8;font-size:8px;letter-spacing:.18em;text-transform:uppercase}
+.page-contact-hero{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.65fr);align-items:center;gap:clamp(60px,9vw,170px);min-height:245px;padding:32px 0 20px}
+.page-contact-hero h2{margin:0;font-size:clamp(76px,8vw,148px);font-weight:400;line-height:.82;letter-spacing:-.075em}
+.page-contact-hero h2 em{font-family:Georgia,'Times New Roman',serif;font-weight:400}
+.page-contact-hero h3{margin:0 0 15px;font-size:20px;letter-spacing:-.03em}
+.page-contact-hero p{margin:0;color:#aab2aa;font-size:13px;line-height:2}
+.page-contact-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px;padding-top:22px;border-top:1px solid #2b2e2b}
+.page-contact-links>a,.page-contact-links>div{position:relative;display:flex;min-width:0;flex-direction:column;gap:10px;padding-right:34px}
+.page-contact-links small{color:#879087;font-size:10px;letter-spacing:.04em}
+.page-contact-links strong{overflow:hidden;color:#f2f3ef;font-size:clamp(17px,1.5vw,25px);font-weight:500;letter-spacing:-.035em;text-overflow:ellipsis;white-space:nowrap}
+.page-contact-links span{position:absolute;right:0;bottom:3px;color:#bfc7bf;font-size:13px}
+.page-contact-links a:hover strong,.page-contact-links a:hover span{color:var(--accent)}
+@media(max-width:700px){
+  .page-contact-inner{padding-top:25px;padding-bottom:30px}
+  .page-contact-hero{display:block;min-height:0;padding:55px 0 45px}
+  .page-contact-hero h2{font-size:clamp(61px,19vw,88px)}
+  .page-contact-hero>div{margin-top:45px}
+  .page-contact-hero h3{font-size:18px}
+  .page-contact-hero p{font-size:12px;line-height:1.85}
+  .page-contact-links{grid-template-columns:1fr;gap:0;padding-top:0}
+  .page-contact-links>a,.page-contact-links>div{padding:19px 34px 19px 0;border-bottom:1px solid #242724}
+  .page-contact-links strong{font-size:19px}
+}

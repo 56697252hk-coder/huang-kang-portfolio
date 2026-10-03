@@ -8,8 +8,10 @@ export default defineConfig({
     apply: 'build',
     writeBundle(options) {
       const output = resolve(options.dir || 'dist');
-      // Pages serves /portfolio directly from portfolio.html.
-      copyFileSync(resolve(output, 'index.html'), resolve(output, 'portfolio.html'));
+      // Cloudflare Pages serves each navigation destination as a real page.
+      for (const page of ['portfolio', 'about', 'strengths', 'contact']) {
+        copyFileSync(resolve(output, 'index.html'), resolve(output, `${page}.html`));
+      }
     },
   }],
 });
