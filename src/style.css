@@ -311,3 +311,15 @@ body.motion-ready .home-page:not(.initial-intro) .hero .orbit-stage,
 body.motion-ready .home-page:not(.initial-intro) .hero .orbit-path,
 body.motion-ready .home-page:not(.initial-intro) .hero .orbit-center,
 body.motion-ready .home-page:not(.initial-intro) .hero-rail{animation:none}
+/* Let the intro finish before starting video and orbit motion. */
+.opening-screen{pointer-events:auto;animation:opening-exit .65s cubic-bezier(.4,0,.2,1) 1.55s forwards;contain:layout paint}
+.opening-line{animation-duration:.65s;animation-delay:.08s}
+.opening-line-b{animation-delay:.14s}
+.opening-word span{animation-duration:.75s;animation-delay:.12s}
+.opening-word small{animation-duration:.4s;animation-delay:.5s}
+body.motion-ready .initial-intro .hero .site-header,
+body.motion-ready .initial-intro .hero .orbit-stage,
+body.motion-ready .initial-intro .hero .orbit-path,
+body.motion-ready .initial-intro .hero .orbit-center,
+body.motion-ready .initial-intro .hero-rail{animation:none}
+.initial-intro .halo{animation-play-state:paused}

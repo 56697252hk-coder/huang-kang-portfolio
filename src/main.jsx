@@ -79,7 +79,7 @@ function App(){
   };
   const [route, setRoute] = React.useState(readRoute);
   const isHome = route.path !== '/portfolio';
-  const [showIntro, setShowIntro] = React.useState(() => readRoute().path !== '/portfolio');
+  const [showIntro, setShowIntro] = React.useState(() => readRoute().path !== '/portfolio' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   React.useEffect(() => {
     const sync = () => { setShowIntro(false); setRoute(readRoute()); };
     window.addEventListener('popstate', sync);
@@ -158,12 +158,12 @@ function App(){
   }, [workFilter, isHome]);
   return <main onClick={navigate} className={(isHome ? 'home-page' : 'portfolio-page') + (showIntro ? ' initial-intro' : '')}>
     <CustomCursor/>
-    {showIntro && <div className="opening-screen" aria-hidden="true"><span className="opening-line opening-line-a"/><div className="opening-word"><span>HUANG KANG</span><small>CREATIVE PORTFOLIO · 2026</small></div><span className="opening-line opening-line-b"/></div>}
+    {showIntro && <div className="opening-screen" aria-hidden="true" onAnimationEnd={event => { if (event.target === event.currentTarget) setShowIntro(false); }}><span className="opening-line opening-line-a"/><div className="opening-word"><span>HUANG KANG</span><small>CREATIVE PORTFOLIO · 2026</small></div><span className="opening-line opening-line-b"/></div>}
     {isHome && <section className="hero" id="top">
-      <div className="hero-media" aria-hidden="true"><HeroBackgroundVideo/><div className="hero-art"><span className="halo halo-a"/><span className="halo halo-b"/><span className="grid-plane"/></div></div>
+      <div className="hero-media" aria-hidden="true">{!showIntro && <HeroBackgroundVideo/>}<div className="hero-art"><span className="halo halo-a"/><span className="halo halo-b"/><span className="grid-plane"/></div></div>
       <div className="hero-shade"/>
       <SiteHeader activeSection={activeSection}/>
-      <OrbitWorks projects={heroProjects} onSelect={setSelectedWork}/>
+      <OrbitWorks suspended={showIntro} projects={heroProjects} onSelect={setSelectedWork}/>
       <div className="hero-rail shell"><span>HUANG KANG / SELECTED WORKS</span><a href="/portfolio#projects">浏览全部作品 ↗</a></div>
     </section>}
     {!isHome && <>
