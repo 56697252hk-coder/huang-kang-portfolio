@@ -130,9 +130,10 @@ export default function GradientWaves({
     const container = containerRef.current;
     if (!container) return undefined;
 
+    const lowPowerMode = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 700;
     const renderer = new Renderer({
       webgl: 2, alpha: true, premultipliedAlpha: true, antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 1.5)
+      dpr: Math.min(window.devicePixelRatio || 1, lowPowerMode ? 1 : 1.25)
     });
     const gl = renderer.gl;
     gl.clearColor(0, 0, 0, 0);
@@ -189,8 +190,15 @@ export default function GradientWaves({
     }
 
     let frame = 0;
+    let lastRender = 0;
+    const frameInterval = lowPowerMode ? 1000 / 30 : 0;
     const start = performance.now();
     const render = now => {
+      if (frameInterval && now - lastRender < frameInterval) {
+        frame = requestAnimationFrame(render);
+        return;
+      }
+      lastRender = now;
       program.uniforms.iTime.value = reducedMotion ? 0 : (now - start) * 0.001;
       currentMouse[0] += 0.05 * (targetMouse[0] - currentMouse[0]);
       currentMouse[1] += 0.05 * (targetMouse[1] - currentMouse[1]);
@@ -199,11 +207,16 @@ export default function GradientWaves({
       renderer.render({ scene: mesh });
       if (!reducedMotion) frame = requestAnimationFrame(render);
     };
-    frame = requestAnimationFrame(render);
+    const startRendering = () => { if (!frame) frame = requestAnimationFrame(render); };
+    const stopRendering = () => { cancelAnimationFrame(frame); frame = 0; };
+    const onVisibilityChange = () => document.hidden ? stopRendering() : startRendering();
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    startRendering();
 
     return () => {
-      cancelAnimationFrame(frame);
+      stopRendering();
       resizeObserver.disconnect();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('pointermove', onPointerMove);
       document.documentElement.removeEventListener('pointerleave', onPointerLeave);
       canvas.remove();

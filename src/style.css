@@ -343,7 +343,7 @@ body.motion-ready .initial-intro .hero-rail{animation:none}
 
 /* Animated React Bits wave field shared by the three content pages. */
 .has-page-waves{position:relative;isolation:isolate;background:#07100e}
-.page-gradient-waves{position:fixed;inset:0;z-index:-2;pointer-events:none;background:#07100e}
+.has-page-waves .gradient-waves-container.page-gradient-waves{position:fixed;inset:0;width:auto;height:auto;z-index:-2;pointer-events:none;background:#07100e}
 .page-gradient-waves:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,9,8,.1),rgba(5,9,8,.42)),radial-gradient(circle at 50% 34%,transparent 0 28%,rgba(5,9,8,.35) 82%);pointer-events:none}
 .has-page-waves>.projects,.has-page-waves>.about,.has-page-waves>.strengths{position:relative;z-index:1;background:transparent}
 .has-page-waves>.projects:before,.has-page-waves>.about:before,.has-page-waves>.strengths:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(6,10,9,.26),rgba(6,10,9,.1) 42%,rgba(6,10,9,.34));pointer-events:none}
