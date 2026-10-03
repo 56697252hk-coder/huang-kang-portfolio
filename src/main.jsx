@@ -7,6 +7,7 @@ import CustomCursor from './CustomCursor.jsx';
 import ProfileCard from './ProfileCard.jsx';
 import VideoPreview from './VideoPreview.jsx';
 import HeroBackgroundVideo from './HeroBackgroundVideo.jsx';
+import GradientWaves from './GradientWaves.jsx';
 import './style.css';
 
 const email = '56697252@qq.com';
@@ -97,6 +98,7 @@ function App(){
   };
   const [route, setRoute] = React.useState(readRoute);
   const isHome = route.path === '/';
+  const hasPageWaves = ['/portfolio','/about','/strengths'].includes(route.path);
   const activeSection = route.path === '/portfolio' ? 'projects' : route.path.slice(1) || 'top';
   const [showIntro, setShowIntro] = React.useState(() => readRoute().path === '/' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   React.useEffect(() => {
@@ -157,7 +159,7 @@ function App(){
     revealItems.forEach(item => itemObserver.observe(item));
     return () => { observer.disconnect(); itemObserver.disconnect(); document.body.classList.remove('motion-ready'); };
   }, [workFilter, route.path]);
-  return <main onClick={navigate} className={(isHome ? 'home-page' : 'portfolio-page') + (showIntro ? ' initial-intro' : '')}>
+  return <main onClick={navigate} className={(isHome ? 'home-page' : 'portfolio-page') + (showIntro ? ' initial-intro' : '') + (hasPageWaves ? ' has-page-waves' : '')}>
     <CustomCursor/>
     {showIntro && <div className="opening-screen" aria-hidden="true" onAnimationEnd={event => { if (event.target === event.currentTarget) setShowIntro(false); }}><span className="opening-line opening-line-a"/><div className="opening-word"><span>HUANG KANG</span><small>CREATIVE PORTFOLIO · 2026</small></div><span className="opening-line opening-line-b"/></div>}
     {isHome && <section className="hero" id="top">
@@ -168,6 +170,7 @@ function App(){
       <div className="hero-rail shell"><span>HUANG KANG / SELECTED WORKS</span><a href="/portfolio">浏览全部作品 ↗</a></div>
     </section>}
     {!isHome && <>
+    {hasPageWaves && <GradientWaves className="page-gradient-waves" horizonColor="#0a241f" waveColor="#5f9d78" crestColor="#e3ffa4" speed={.22} amplitude={2.15} waveScale={.55} waveRatio={.9} swell={28} turbulence={16} tilt={1.14} zoom={1.08} height={5.2} fogDepth={17} detail="low" brightness={.92} opacity={.96} mouseInteraction parallaxStrength={.32} grain grainIntensity={.035}/>}
     {showFloatingHeader && <SiteHeader floating activeSection={activeSection}/>} 
     {route.path === '/portfolio' &&
     <section className="projects section reveal-section" id="projects"><div className="shell"><div className="works-eyebrow">01 / THE WORK / 作品</div><div className="works-heading"><h2>Selected works<span>.</span></h2><p>创意、影像与动态视觉的不同表达。</p></div><div className="works-toolbar"><div className="works-filters" aria-label="作品分类">{workFilters.map(filter => <button type="button" key={filter} className={workFilter === filter ? 'is-active' : ''} onClick={() => setWorkFilter(filter)} aria-pressed={workFilter === filter}>{filter}</button>)}</div><span className="works-count">{String(visibleWorks.length).padStart(2,'0')} / {String(workItems.length).padStart(2,'0')}</span></div><div className="works-grid">{visibleWorks.map(item => <article className={`work-tile ${item.video ? 'has-video' : ''}`} id={`work-${item.n}`} key={item.n} role={item.video ? 'button' : undefined} tabIndex={item.video ? 0 : undefined} onClick={() => item.video && setSelectedWork(item)} onKeyDown={(event) => { if (item.video && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); setSelectedWork(item); } }}><GlareHover className="work-glare" width="100%" height="auto" background="#142322" borderRadius="0px" borderColor="#2b3432" glareColor="#94a3b8" glareOpacity={.6} glareAngle={-30} glareSize={300} transitionDuration={500} playOnce><div className={`work-cover ${item.video || item.image ? '' : 'work-cover-empty'}`} role="img" aria-label={item.video ? `${item.title}的视频预览` : item.image ? `${item.title}的封面` : `${item.title}，封面待加入`}>{item.video ? <><VideoPreview poster={item.poster} src={item.video} previewAt={item.previewAt} previewSecond={item.previewSecond}/><span className="work-play" aria-hidden="true">▶</span></> : item.image ? <img src={item.image} alt="" /> : <><span className="work-cover-index">HK / SELECTED WORK</span><span className="work-cover-number" aria-hidden="true">{item.n}</span><span className="work-cover-category">{item.category}</span></>}</div></GlareHover><div className="work-tile-meta"><h3>{item.title}</h3><span aria-hidden="true">↗</span></div><p>{item.category} / {item.detail}</p></article>)}</div></div></section>

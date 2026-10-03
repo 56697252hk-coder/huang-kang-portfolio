@@ -340,6 +340,22 @@ body.motion-ready .initial-intro .hero-rail{animation:none}
 .page-contact-links strong{overflow:hidden;color:#f2f3ef;font-size:clamp(17px,1.5vw,25px);font-weight:500;letter-spacing:-.035em;text-overflow:ellipsis;white-space:nowrap}
 .page-contact-links span{position:absolute;right:0;bottom:3px;color:#bfc7bf;font-size:13px}
 .page-contact-links a:hover strong,.page-contact-links a:hover span{color:var(--accent)}
+
+/* Animated React Bits wave field shared by the three content pages. */
+.has-page-waves{position:relative;isolation:isolate;background:#07100e}
+.page-gradient-waves{position:fixed;inset:0;z-index:-2;pointer-events:none;background:#07100e}
+.page-gradient-waves:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,9,8,.1),rgba(5,9,8,.42)),radial-gradient(circle at 50% 34%,transparent 0 28%,rgba(5,9,8,.35) 82%);pointer-events:none}
+.has-page-waves>.projects,.has-page-waves>.about,.has-page-waves>.strengths{position:relative;z-index:1;background:transparent}
+.has-page-waves>.projects:before,.has-page-waves>.about:before,.has-page-waves>.strengths:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(6,10,9,.26),rgba(6,10,9,.1) 42%,rgba(6,10,9,.34));pointer-events:none}
+.has-page-waves>.page-contact{position:relative;z-index:1}
+@media(max-width:700px){
+  .page-gradient-waves:after{background:linear-gradient(180deg,rgba(5,9,8,.38),rgba(5,9,8,.7)),radial-gradient(circle at 50% 32%,transparent,rgba(5,9,8,.56) 75%)}
+}
+@media(prefers-reduced-motion:reduce){.page-gradient-waves{opacity:.82}}
+
+/* Blend capability cards into the animated green page background. */
+.ability{background:rgba(7,16,14,.58);border-color:rgba(173,205,169,.2);-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px)}
+.ability:hover,.motion-ready .reveal-section .ability.is-item-inview:hover{background:rgba(10,24,20,.72);border-color:rgba(216,239,128,.48)}
 @media(max-width:700px){
   .page-contact-inner{padding-top:25px;padding-bottom:30px}
   .page-contact-hero{display:block;min-height:0;padding:55px 0 45px}
